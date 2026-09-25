@@ -9,10 +9,10 @@ def generate_with_ollama(model: str, prompt: str, temperature: float = 0.0) -> s
 
     Requires Ollama running locally:
         ollama serve
-        ollama pull qwen2.5:7b
+        ollama pull qwen3.5:4b
 
     Args:
-        model: Ollama model name, for example "qwen2.5:7b"
+        model: Ollama model name, for example "qwen3.5:4b"
         prompt: Full prompt to send
         temperature: Sampling temperature
 
