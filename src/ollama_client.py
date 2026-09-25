@@ -1,5 +1,8 @@
 import requests
 
+_SESSION = requests.Session()
+_SESSION.trust_env = False
+
 def generate_with_ollama(model: str, prompt: str, temperature: float = 0.0) -> str:
     """
     Calls a local Ollama model.
@@ -27,9 +30,7 @@ def generate_with_ollama(model: str, prompt: str, temperature: float = 0.0) -> s
     }
 
     try:
-        session = requests.Session()
-        session.trust_env = False
-        response = session.post(url, json=payload, timeout=120)
+        response = _SESSION.post(url, json=payload, timeout=120)
         response.raise_for_status()
     except requests.exceptions.ConnectionError as exc:
         raise RuntimeError(
