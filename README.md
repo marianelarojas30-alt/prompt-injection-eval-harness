@@ -42,13 +42,13 @@ Download Ollama from https://ollama.com
 Then pull a local model:
 
 ```bash
-ollama pull qwen2.5:7b
+ollama pull qwen3.5:4b
 ```
 
 or:
 
 ```bash
-ollama pull llama3.1:8b
+ollama pull qwen3.5:9b
 ```
 
 ### 2. Create a Python virtual environment
@@ -62,7 +62,7 @@ pip install -r requirements.txt
 ### 3. Run the evaluation
 
 ```bash
-python src/run_eval.py --model qwen2.5:7b
+python src/run_eval.py --model qwen3.5:4b
 ```
 
 Results will be saved to:
