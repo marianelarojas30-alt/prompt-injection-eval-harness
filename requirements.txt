@@ -1,2 +1,3 @@
-requests>=2.31.0
-pandas>=2.2.0
+requests>=2.32.4
+pandas>=2.2.3
+urllib3>=2.8.0  # pulled in by requests; floor past the 2025-2026 CVEs
