@@ -119,3 +119,7 @@ These are simple rule-based labels for the first version. Future versions may ad
 ## Ethical use
 
 This project is for defensive AI security research and education only.
+
+## License
+
+Free for **noncommercial use** under the [PolyForm Noncommercial License 1.0.0](LICENSE). Selling it, charging for it, or any commercial use requires a separate written commercial license from the author, Marianela Bourgault (contact through GitHub). Copies and modified versions must keep the copyright notice.
