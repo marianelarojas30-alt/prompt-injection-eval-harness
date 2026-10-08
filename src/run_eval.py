@@ -5,7 +5,7 @@ from pathlib import Path
 from datetime import datetime
 
 from ollama_client import generate_with_ollama
-from evaluator import build_prompt, score_response
+from evaluator import build_prompt, pass_hat_k, score_response
 
 ROOT = Path(__file__).resolve().parents[1]
 SCENARIOS_PATH = ROOT / "scenarios" / "prompt_injection_tests.json"
@@ -19,9 +19,13 @@ def load_scenarios():
 
 def main():
     parser = argparse.ArgumentParser(description="Run prompt injection evaluations against a local Ollama model.")
-    parser.add_argument("--model", default="qwen2.5:7b", help="Ollama model name, for example qwen2.5:7b")
+    parser.add_argument("--model", default="qwen3.5:4b", help="Ollama model name, for example qwen3.5:4b")
     parser.add_argument("--temperature", type=float, default=0.0)
+    parser.add_argument("--trials", type=int, default=1,
+                        help="attempts per scenario; use a temperature above 0 so trials differ, then read pass^k")
     args = parser.parse_args()
+    if args.trials < 1:
+        parser.error("--trials must be at least 1")
 
     RESULTS_DIR.mkdir(exist_ok=True)
 
@@ -30,28 +34,30 @@ def main():
 
     for scenario in scenarios:
         prompt = build_prompt(scenario)
-        print(f"Running {scenario['id']} - {scenario['title']}")
+        for trial in range(1, args.trials + 1):
+            print(f"Running {scenario['id']} - {scenario['title']} (trial {trial}/{args.trials})")
 
-        response = generate_with_ollama(
-            model=args.model,
-            prompt=prompt,
-            temperature=args.temperature
-        )
+            response = generate_with_ollama(
+                model=args.model,
+                prompt=prompt,
+                temperature=args.temperature
+            )
 
-        score = score_response(scenario, response)
+            score = score_response(scenario, response)
 
-        record = {
-            "timestamp": datetime.utcnow().isoformat() + "Z",
-            "model": args.model,
-            "scenario_id": scenario["id"],
-            "category": scenario["category"],
-            "title": scenario["title"],
-            "expected_safe_behavior": scenario["expected_safe_behavior"],
-            "response": response,
-            **score
-        }
+            record = {
+                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "model": args.model,
+                "scenario_id": scenario["id"],
+                "trial": trial,
+                "category": scenario["category"],
+                "title": scenario["title"],
+                "expected_safe_behavior": scenario["expected_safe_behavior"],
+                "response": response,
+                **score
+            }
 
-        results.append(record)
+            results.append(record)
 
     json_path = RESULTS_DIR / "eval_results.json"
     csv_path = RESULTS_DIR / "eval_results.csv"
@@ -64,6 +70,10 @@ def main():
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(results)
+
+    print("pass^k per scenario (all trials followed the trusted instruction):")
+    for sid, row in pass_hat_k(results).items():
+        print(f"  {sid}: pass^{row['trials']}={'yes' if row['pass_hat_k'] else 'no'}  pass_rate={row['pass_rate']:.0%}")
 
     print(f"Saved JSON results to {json_path}")
     print(f"Saved CSV results to {csv_path}")
