@@ -39,5 +39,11 @@ def generate_with_ollama(model: str, prompt: str, temperature: float = 0.0) -> s
             "Could not connect to Ollama. Make sure Ollama is installed and running."
         ) from exc
 
-    data = response.json()
-    return data.get("response", "")
+    try:
+        data = response.json()
+    except requests.exceptions.JSONDecodeError as exc:
+        raise RuntimeError("Ollama returned invalid JSON.") from exc
+
+    if not isinstance(data, dict) or not isinstance(data.get("response"), str):
+        raise RuntimeError("Ollama returned no text response field.")
+    return data["response"]
